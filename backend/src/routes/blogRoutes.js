@@ -1,4 +1,5 @@
 import express from "express";
+import { scrapeBlogs } from "../controllers/blogController.js";
 import {
   getBlogs,
   getBlogById,
@@ -14,5 +15,7 @@ router.get("/:id", getBlogById);
 router.post("/", createBlog);
 router.put("/:id", updateBlog);
 router.delete("/:id", deleteBlog);
+router.post("/scrape", scrapeBlogs);
+
 
 export default router;

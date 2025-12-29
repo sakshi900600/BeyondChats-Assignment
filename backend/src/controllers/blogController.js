@@ -1,4 +1,7 @@
 import Blog from "../models/Blog.js";
+import { scrapeOldestBlogs } from "../services/scraper.js";
+
+
 
 export const getBlogs = async (req, res) => {
   const blogs = await Blog.find();
@@ -25,4 +28,11 @@ export const updateBlog = async (req, res) => {
 export const deleteBlog = async (req, res) => {
   await Blog.findByIdAndDelete(req.params.id);
   res.json({ message: "Blog deleted" });
+};
+
+
+
+export const scrapeBlogs = async (req, res) => {
+  await scrapeOldestBlogs();
+  res.json({ message: "Scraping started" });
 };
