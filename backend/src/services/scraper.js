@@ -10,7 +10,7 @@ export const scrapeOldestBlogs = async () => {
   try {
     const blogLinks = [];
 
-    // 1️⃣ Collect oldest blog URLs (from last pages only)
+    // 1️⃣ Collect oldest blog URLs (page bottom → top)
     for (let page = LAST_PAGE; page >= 1; page--) {
       if (blogLinks.length >= REQUIRED) break;
 
@@ -20,8 +20,11 @@ export const scrapeOldestBlogs = async () => {
       const { data } = await axios.get(pageUrl);
       const $ = cheerio.load(data);
 
-      $("article.entry-card").each((_, article) => {
-        if (blogLinks.length >= REQUIRED) return false;
+      // ✅ Reverse articles (oldest first inside page)
+      const articles = $("article.entry-card").toArray().reverse();
+
+      for (const article of articles) {
+        if (blogLinks.length >= REQUIRED) break;
 
         const link = $(article)
           .find("h2.entry-title a")
@@ -32,10 +35,10 @@ export const scrapeOldestBlogs = async () => {
             blogLinks.push(link);
           }
         }
-      });
+      }
     }
 
-    // 2️⃣ Scrape individual blog pages (FULL CONTENT)
+    // 2️⃣ Scrape individual blog pages
     for (const url of blogLinks) {
       const exists = await Blog.findOne({ originalUrl: url });
       if (exists) continue;
@@ -45,10 +48,7 @@ export const scrapeOldestBlogs = async () => {
 
       const title = $("h1").first().text().trim();
 
-      // ✅ Correct Elementor content selector
       let content = $(".elementor-widget-theme-post-content").text().trim();
-
-      // Fallback (safety)
       if (!content) {
         content = $(".wp-block-post-content").text().trim();
       }
@@ -68,7 +68,7 @@ export const scrapeOldestBlogs = async () => {
       });
     }
 
-    console.log(`✅ Successfully scraped ${REQUIRED} oldest blogs`);
+    console.log("✅ Successfully scraped 5 OLDEST blogs");
   } catch (err) {
     console.error("❌ Scraping failed:", err.message);
   }
