@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000/api/blogs';
+// const API_BASE = 'http://localhost:5000/api/blogs';
+const API_BASE = 'https://beyond-chats-backend-inky.vercel.app/api/blogs';
 
 export const blogApi = {
   getAll: () => axios.get(API_BASE),
