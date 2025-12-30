@@ -59,17 +59,31 @@
   overflow: hidden;
 }
 
+.section-header.top {
+  padding: 40px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 0;
+}
+
+.columns-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
 .blog-section {
   padding: 40px;
 }
 
 .blog-section.original {
   background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
 }
 
 .blog-section.updated {
   padding: 40px;
+  background-color: white;
 }
 
 .section-header {
@@ -94,6 +108,26 @@
 .blog-date {
   font-size: 14px;
   color: #6b7280;
+}
+
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3b82f6;
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.source-link:hover {
+  background-color: #eff6ff;
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 .blog-badge {
@@ -205,6 +239,103 @@
   color: inherit;
 }
 
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.markdown-content table th,
+.markdown-content table td {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  text-align: left;
+}
+
+.markdown-content table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.markdown-content table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.md-link {
+  color: #3b82f6;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.md-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.md-paragraph {
+  margin: 0 0 16px 0;
+}
+
+.md-list-item {
+  margin: 8px 0;
+}
+
+.md-inline-code {
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+  color: #d97706;
+}
+
+.md-pre {
+  background-color: #1f2937;
+  color: #e5e7eb;
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.md-code-block {
+  color: #e5e7eb;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.md-blockquote {
+  margin: 16px 0;
+  padding-left: 16px;
+  border-left: 4px solid #3b82f6;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.md-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.md-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
 .blog-divider {
   display: flex;
   align-items: center;
@@ -282,9 +413,24 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .columns-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-section.original {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+}
+
 @media (max-width: 768px) {
   .blog-detail-container {
     padding: 24px 16px;
+  }
+
+  .section-header.top {
+    padding: 24px;
   }
 
   .blog-detail-title {
@@ -297,10 +443,6 @@
 
   .blog-section.original {
     border-bottom: 1px solid #e5e7eb;
-  }
-
-  .blog-divider {
-    padding: 24px 16px;
   }
 
   .markdown-content {
@@ -321,12 +463,23 @@
 
   .blog-meta {
     gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .source-link {
+    width: 100%;
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
   .blog-detail-container {
     padding: 16px 12px;
+  }
+
+  .section-header.top {
+    padding: 16px;
   }
 
   .blog-detail-title {
@@ -341,17 +494,6 @@
     font-size: 17px;
   }
 
-  .blog-divider {
-    flex-direction: column;
-    gap: 8px;
-    padding: 16px;
-    opacity: 0.2;
-  }
-
-  .divider-line {
-    width: 100%;
-  }
-
   .markdown-content {
     font-size: 13px;
     line-height: 1.6;
@@ -362,6 +504,15 @@
     padding-left: 16px;
   }
 
+  .markdown-content table {
+    font-size: 12px;
+  }
+
+  .markdown-content table th,
+  .markdown-content table td {
+    padding: 8px;
+  }
+
   .references-list li {
     word-break: break-word;
   }
@@ -369,5 +520,27 @@
   .btn-back-top {
     width: 100%;
     margin-bottom: 24px;
+  }
+
+  .blog-meta {
+    gap: 6px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .blog-date {
+    font-size: 12px;
+  }
+
+  .blog-badge {
+    font-size: 11px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .source-link {
+    width: 100%;
+    justify-content: center;
+    font-size: 12px;
   }
 }

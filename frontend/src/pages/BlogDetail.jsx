@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import { blogApi } from '../services/blogApi';
 import './BlogDetail.css';
 
@@ -26,6 +30,34 @@ const BlogDetail = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const cleanContent = (text) => {
+    if (!text) return '';
+    return text.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  };
+
+  const mdComponents = {
+    a: ({ node, ...props }) => <a className="md-link" {...props} />,
+    p: ({ node, ...props }) => <p className="md-paragraph" {...props} />,
+    li: ({ node, ...props }) => <li className="md-list-item" {...props} />,
+    code: ({ node, inline, className, children, ...props }) => {
+      return inline ? (
+        <code className="md-inline-code">{children}</code>
+      ) : (
+        <pre className="md-pre">
+          <code className={`md-code-block ${className || ''}`}>{children}</code>
+        </pre>
+      );
+    },
+    img: ({ node, ...props }) => <img className="md-image" alt={props.alt || ''} {...props} />,
+    blockquote: ({ node, ...props }) => <blockquote className="md-blockquote" {...props} />,
+    table: ({ node, ...props }) => <table className="md-table" {...props} />,
+    thead: ({ node, ...props }) => <thead {...props} />,
+    tbody: ({ node, ...props }) => <tbody {...props} />,
+    tr: ({ node, ...props }) => <tr {...props} />,
+    td: ({ node, ...props }) => <td {...props} />,
+    th: ({ node, ...props }) => <th {...props} />,
   };
 
   if (loading) {
@@ -61,81 +93,73 @@ const BlogDetail = () => {
       </button>
 
       <article className="blog-detail-wrapper">
-        {/* Original Content Section */}
-        <div className="blog-section original">
-          <div className="section-header">
-            <h1 className="blog-detail-title">{blog.title}</h1>
-            <div className="blog-meta">
-              <span className="blog-date">
-                📅 {new Date(blog.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </span>
-              <span className={`blog-badge ${blog.isUpdated ? 'updated' : 'pending'}`}>
-                {blog.isUpdated ? '✓ Updated Version' : '○ Original'}
-              </span>
-            </div>
-          </div>
-
-          <div className="section-content">
-            <h2 className="section-title">Original Content</h2>
-            <div className="markdown-content">
-              {blog.originalContent}
-            </div>
+        <div className="section-header top">
+          <h1 className="blog-detail-title">{blog.title}</h1>
+          <div className="blog-meta">
+            <span className="blog-date">
+              📅 {new Date(blog.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </span>
+            <span className={`blog-badge ${blog.isUpdated ? 'updated' : 'pending'}`}>
+              {blog.isUpdated ? '✓ Updated Version' : '○ Original'}
+            </span>
+            {blog.originalUrl && (
+              <a href={blog.originalUrl} target="_blank" rel="noopener noreferrer" className="source-link">
+                🔗 Original Source
+              </a>
+            )}
           </div>
         </div>
 
-        {/* Divider */}
-        {blog.isUpdated && blog.updatedContent && (
-          <>
-            <div className="blog-divider">
-              <div className="divider-line"></div>
-              <span className="divider-text">✨ AI-Enhanced Version</span>
-              <div className="divider-line"></div>
+        <div className="columns-wrapper">
+          <div className="blog-section original">
+            <h2 className="section-title">Original Content</h2>
+            <div className="section-content markdown-content">
+              <ReactMarkdown
+                children={cleanContent(blog.originalContent)}
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                components={mdComponents}
+              />
             </div>
-
-            {/* Updated Content Section */}
-            <div className="blog-section updated">
-              <div className="section-header">
-                <h2 className="section-title">Updated Content</h2>
-                {blog.references && blog.references.length > 0 && (
-                  <div className="references-preview">
-                    📚 Based on {blog.references.length} reference(s)
-                  </div>
-                )}
-              </div>
-
-              <div className="section-content">
-                <div className="markdown-content">
-                  {blog.updatedContent}
-                </div>
-
-                {blog.references && blog.references.length > 0 && (
-                  <div className="references-section">
-                    <h3 className="references-title">References:</h3>
-                    <ul className="references-list">
-                      {blog.references.map((ref, idx) => (
-                        <li key={idx}>
-                          <a href={ref} target="_blank" rel="noopener noreferrer" className="reference-link">
-                            {ref}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {!blog.isUpdated && (
-          <div className="no-update-message">
-            <p>✏️ This blog hasn't been enhanced yet. Run the rewrite process to generate an AI-improved version!</p>
           </div>
-        )}
+
+          <div className="blog-section updated">
+            <h2 className="section-title">AI-Enhanced Version</h2>
+            <div className="section-content markdown-content">
+              {blog.isUpdated && blog.updatedContent ? (
+                <ReactMarkdown
+                  children={cleanContent(blog.updatedContent)}
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                  components={mdComponents}
+                />
+              ) : (
+                <div className="no-update-message">
+                  <p>✏️ This blog hasn't been enhanced yet. Run the rewrite process to generate an AI-improved version!</p>
+                </div>
+              )}
+
+              {blog.references && blog.references.length > 0 && (
+                <div className="references-section">
+                  <h3 className="references-title">References</h3>
+                  <ul className="references-list">
+                    {blog.references.map((ref, idx) => (
+                      <li key={idx}>
+                        <a href={ref} target="_blank" rel="noopener noreferrer" className="reference-link">
+                          {ref}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </article>
     </div>
   );
