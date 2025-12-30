@@ -457,9 +457,5 @@ POST /scrape
 - Optimized images
 - Minimal horizontal scrolling
 
----
-```
-
----
 
 
