@@ -28,19 +28,6 @@ const BlogList = () => {
     }
   };
 
-  const handleRewrite = async () => {
-    try {
-      setLoading(true);
-      await blogApi.rewrite();
-      // Refresh blogs after rewrite
-      await fetchBlogs();
-      alert('Rewrite process started!');
-    } catch (err) {
-      alert('Error starting rewrite process: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="blog-list-container">
@@ -49,8 +36,8 @@ const BlogList = () => {
           <h1 className="blog-list-title">📚 Blog Articles</h1>
           <p className="blog-list-subtitle">Explore and read enhanced blog content with AI-powered improvements</p>
         </div>
-        <button className="btn-rewrite" onClick={handleRewrite} disabled={loading}>
-          {loading ? 'Processing...' : '✨ Rewrite Blogs'}
+        <button className="btn-rewrite" >
+          ✨Blogs Rewritten by AI
         </button>
       </div>
 
