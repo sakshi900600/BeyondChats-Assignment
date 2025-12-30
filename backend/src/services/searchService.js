@@ -1,69 +1,102 @@
-// src/services/searchService.js
 import axios from "axios";
 import * as cheerio from "cheerio";
 
+/**
+ * Filters out ads, sponsored links, e-commerce, and non-article URLs
+ */
+const isValidBlogUrl = (url) => {
+  const invalidPatterns = [
+    'amazon.', 'flipkart.', 'ebay.', 'walmart.', 'etsy.',
+    'facebook.', 'twitter.', 'instagram.', 'youtube.', 'tiktok.',
+    '.pdf'
+  ];
+
+  if (invalidPatterns.some(p => url.toLowerCase().includes(p))) {
+    return false;
+  }
+
+  const validPatterns = [
+    '/blog', '/article', '/guide', '/post', '/learn'
+  ];
+
+  return validPatterns.some(p => url.toLowerCase().includes(p));
+};
+
 export const searchWeb = async (query) => {
   try {
-    const searchUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+    const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query + " blog")}`;
 
     const { data } = await axios.get(searchUrl, {
-      headers: { "User-Agent": "Mozilla/5.0" }
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
     });
 
     const $ = cheerio.load(data);
     const results = [];
 
     $(".result").each((_, el) => {
-      if (results.length >= 5) return;
+      if (results.length >= 2) return false; // 🔴 HARD LIMIT = 2
 
-      const title = $(el).find(".result__a").text();
       let url = $(el).find(".result__a").attr("href");
-      const snippet = $(el).find(".result__snippet").text();
+      const title = $(el).find(".result__a").text().trim();
 
-      if (url?.startsWith("/l/?")) {
-        url = "https://duckduckgo.com" + url;
+      if (url?.includes("duckduckgo.com/l/?")) {
+        const params = new URLSearchParams(url.split("?")[1]);
+        url = params.get("uddg");
       }
 
-      if (title && url) {
-        results.push({ title, url, snippet });
+      if (title && url && url.startsWith("http") && isValidBlogUrl(url)) {
+        results.push({ title, url });
+        console.log(`  ✓ Valid blog found: ${url}`);
       }
     });
 
+    console.log(`\n✓ Found ${results.length} valid blog/article URLs`);
     return results;
+
   } catch (err) {
-    console.error("❌ DuckDuckGo search failed:", err.message);
+    console.error("❌ Web search failed:", err.message);
     return [];
   }
 };
 
 export const scrapeTopArticles = async (searchResults) => {
-  const contents = [];
+  const scrapedContents = [];
   const referenceUrls = [];
 
-  for (let i = 0; i < Math.min(2, searchResults.length); i++) {
+  for (let i = 0; i < searchResults.length; i++) {
     const url = searchResults[i].url;
 
     try {
+      console.log(`\n  📄 Scraping article ${i + 1}: ${url}`);
+
       const { data } = await axios.get(url, {
-        headers: { "User-Agent": "Mozilla/5.0" }
+        headers: { "User-Agent": "Mozilla/5.0" },
+        timeout: 15000
       });
 
       const $ = cheerio.load(data);
-      let content = "";
+      $('script, style, nav, footer, header').remove();
 
+      let content = "";
       $("p").each((_, el) => {
         const text = $(el).text().trim();
-        if (text.length > 50) content += text + "\n\n";
+        if (text.length > 60 && text.length < 800) {
+          content += text + "\n\n";
+        }
       });
 
-      if (content.length > 200) {
-        contents.push(content);
+      if (content.length > 400) {
+        scrapedContents.push(content.slice(0, 2000));
         referenceUrls.push(url);
+        console.log(`  ✅ Successfully scraped ${content.length} characters`);
       }
-    } catch {
-      console.warn("⚠️ Failed to scrape:", url);
+
+    } catch (err) {
+      console.warn(`  ⚠️ Failed to scrape ${url}: ${err.message}`);
     }
   }
 
-  return { scrapedContents: contents, referenceUrls };
+  return { scrapedContents, referenceUrls };
 };

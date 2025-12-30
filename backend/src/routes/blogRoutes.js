@@ -1,4 +1,3 @@
-// src/routes/blogRoutes.js
 import express from "express";
 import {
   getBlogs,
@@ -11,8 +10,9 @@ import {
 
 const router = express.Router();
 
+// Specific routes BEFORE parameterized routes
+router.post("/rewrite", rewriteOldestBlogs);
 router.get("/", getBlogs);
-router.get("/rewrite", rewriteOldestBlogs);
 router.post("/", createBlog);
 router.get("/:id", getBlogById);
 router.put("/:id", updateBlog);
