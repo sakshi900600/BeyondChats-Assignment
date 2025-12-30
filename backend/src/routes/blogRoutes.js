@@ -1,21 +1,21 @@
+// src/routes/blogRoutes.js
 import express from "express";
-import { scrapeBlogs } from "../controllers/blogController.js";
 import {
   getBlogs,
   getBlogById,
   createBlog,
   updateBlog,
-  deleteBlog
+  deleteBlog,
+  rewriteOldestBlogs
 } from "../controllers/blogController.js";
 
 const router = express.Router();
 
 router.get("/", getBlogs);
-router.get("/:id", getBlogById);
+router.get("/rewrite", rewriteOldestBlogs);
 router.post("/", createBlog);
+router.get("/:id", getBlogById);
 router.put("/:id", updateBlog);
 router.delete("/:id", deleteBlog);
-router.post("/scrape", scrapeBlogs);
-
 
 export default router;
